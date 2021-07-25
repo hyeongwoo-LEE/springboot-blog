@@ -12,6 +12,11 @@ public class blogControllerTest {
         return "<h1>hello spring boot</h1>";
     }
 
+    @GetMapping("/test")
+    public String text(){
+        return "git";
+    }
+
 
 
 }
