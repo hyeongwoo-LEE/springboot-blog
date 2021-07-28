@@ -17,6 +17,4 @@ public class blogControllerTest {
         return "git";
     }
 
-
-
 }
