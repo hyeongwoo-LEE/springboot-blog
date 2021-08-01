@@ -1,10 +1,9 @@
 package com.cos.blog.test;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
 public class Member {
 
     //private 함수에 다이렉트로 접근하는 것을 막음 -> public 메서드를 작성해 접근
@@ -18,6 +17,7 @@ public class Member {
     private String email;
 
 
+    @Builder
     public Member(int id, String username, String password, String email) {
         this.id = id;
         this.username = username;
