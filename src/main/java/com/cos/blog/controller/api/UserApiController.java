@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
+
 @RequiredArgsConstructor
 @RestController
 public class UserApiController {
@@ -25,5 +27,20 @@ public class UserApiController {
         user.setRole(RoleType.USER);
         int result = userService.회원가입(user);
         return new ResponseDTO<Integer>(HttpStatus.OK.value(),result); //자바오브젝트를 JSON으로 반환(Jackson)
+    }
+
+    @PostMapping("/api/user/login")
+    public ResponseDTO<Integer> login(@RequestBody User user, HttpSession session){
+
+        System.out.println("UserApiController: login 호출됨" );
+
+        User principal = userService.로그인(user); //principal 접급 주체
+
+        if(principal != null){
+            session.setAttribute("principal", principal);
+        }
+
+        return new ResponseDTO<>(HttpStatus.OK.value(), 1);
+
     }
 }

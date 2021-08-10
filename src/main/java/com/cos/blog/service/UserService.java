@@ -36,4 +36,9 @@ public class UserService {
      * 수신자 금액 update() - commit
      * 한 트랜잭션에서 수행  - 서비스 : 대부분 여러 쿼리가 필요함 -> 서비스
      */
+
+    @Transactional(readOnly = true) //select할 때 트랜잭션 시작, 서비스 종료시에 트랜잭션 종료 (정합성)
+    public User 로그인(User user){
+        return userRepository.findByUsernameAndPassword(user.getUsername(), user.getPassword());
+    }
 }
