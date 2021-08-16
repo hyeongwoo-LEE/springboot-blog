@@ -31,7 +31,7 @@ public class Board {
     private int count;
 
     @JoinColumn(name="userId")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
     @OneToMany(mappedBy = "board", fetch = FetchType.EAGER) //mappedBy 연관관계의 주인이 아니다. DB에 칼럼 만들지마라, fetch 기본전략 Lazy
