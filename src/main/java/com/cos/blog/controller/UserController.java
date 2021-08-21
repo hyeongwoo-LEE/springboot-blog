@@ -1,5 +1,9 @@
 package com.cos.blog.controller;
 
+import com.cos.blog.model.KakaoProfile;
+import com.cos.blog.model.OAuthToken;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/auth/kakao/callback")
-    public @ResponseBody String kakaoCallback(@RequestParam("code") String code){ //Data를 리턴해주는 컨트롤러 함수
+    public @ResponseBody String kakaoCallback(@RequestParam("code") String code) throws JsonProcessingException { //Data를 리턴해주는 컨트롤러 함수
 
         //POST 방식으로 key=value 데이터를 요청 (카카오쪽으로)
         RestTemplate rt = new RestTemplate();
@@ -62,7 +66,46 @@ public class UserController {
                 String.class
         );
 
-        return "카카오 토큰 요청 완료: 토큰요청에 대한 응답 "+ response;
+        //Gson, Json Simple, ObjectMapper
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        OAuthToken oAuthToken = objectMapper.readValue(response.getBody(), OAuthToken.class);
+
+        System.out.println(oAuthToken.getAccess_token());
+
+        RestTemplate rt2 = new RestTemplate();
+
+        //HttpHeader 오브젝트 생성 (엔티티) - 헤더, 바디
+        HttpHeaders headers2 = new HttpHeaders();
+
+        headers2.add("Authorization", "Bearer " + oAuthToken.getAccess_token());
+        headers2.add("Content-type","application/x-www-form-urlencoded;charset=utf-8");
+
+        //HttpHeader와 HttpBody를 하나의 오브젝트에 담기
+        HttpEntity<MultiValueMap<String,String>> kakaoProfileRequest2 =
+                new HttpEntity<>(headers2);
+
+
+        //Http요청하기 - Post방식으로 -그리고 response 변수의 응답 받음.
+        ResponseEntity<String> response2 = rt2.exchange(
+                "https://kapi.kakao.com/v2/user/me",
+                HttpMethod.POST,
+                kakaoProfileRequest2,
+                String.class
+        );
+
+
+
+        System.out.println(response2.getBody());
+
+        //Gson, Json Simple, ObjectMapper
+        ObjectMapper objectMapper2 = new ObjectMapper();
+
+        KakaoProfile kakaoProfile = objectMapper.readValue(response.getBody(), KakaoProfile.class);
+
+        System.out.println("카카오 아이디(번호): "+kakaoProfile.getId());
+        System.out.println("카카오 이메일: " + kakaoProfile.getKakaoAccount().email);
+        return response2.getBody();
     }
 
 
