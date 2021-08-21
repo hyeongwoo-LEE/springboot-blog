@@ -22,6 +22,15 @@ public class UserService {
 
     private final BCryptPasswordEncoder encoder;
 
+    @Transactional(readOnly = true)
+    public User 회원찾기(String username){
+
+        return userRepository.findByUsername(username).orElseGet(() ->{
+            return new User();
+        });
+
+    }
+
     @Transactional
     public int 회원가입(User user){
 
@@ -54,12 +63,16 @@ public class UserService {
             return new IllegalArgumentException("회원찾기 실패");
         });
 
-        String rawPassword = user.getPassword();
-        String encPassword = encoder.encode(rawPassword);
 
-        //더티체킹
-        persistance.setPassword(encPassword);
-        persistance.setEmail(user.getEmail());
+        //Vaildate 체크
+        if (persistance.getOauth() == null || persistance.getOauth().equals("")){
+            String rawPassword = user.getPassword();
+            String encPassword = encoder.encode(rawPassword);
+
+            //더티체킹
+            persistance.setPassword(encPassword);
+            persistance.setEmail(user.getEmail());
+        }
 
     }
 

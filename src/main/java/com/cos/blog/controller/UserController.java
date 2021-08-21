@@ -2,12 +2,21 @@ package com.cos.blog.controller;
 
 import com.cos.blog.model.KakaoProfile;
 import com.cos.blog.model.OAuthToken;
+import com.cos.blog.model.RoleType;
+import com.cos.blog.model.User;
+import com.cos.blog.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -16,13 +25,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.UUID;
+
 
 //인증이 안된 사용자들이 출입할 수 있는 경로를 /auth/** 허용
 //그냥 주소가 / 이면 index.jsp 허용
 //static 이하에 있는 /js/**, /css/**, /image/**
 
+@RequiredArgsConstructor
 @Controller
 public class UserController {
+
+    @Value("${cos.key}")
+    private String cosKey;
+
+
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
 
     @GetMapping("/auth/joinForm")
@@ -36,7 +55,7 @@ public class UserController {
     }
 
     @GetMapping("/auth/kakao/callback")
-    public @ResponseBody String kakaoCallback(@RequestParam("code") String code) throws JsonProcessingException { //Data를 리턴해주는 컨트롤러 함수
+    public String kakaoCallback(@RequestParam("code") String code) throws JsonProcessingException { //Data를 리턴해주는 컨트롤러 함수
 
         //POST 방식으로 key=value 데이터를 요청 (카카오쪽으로)
         RestTemplate rt = new RestTemplate();
@@ -101,11 +120,40 @@ public class UserController {
         //Gson, Json Simple, ObjectMapper
         ObjectMapper objectMapper2 = new ObjectMapper();
 
-        KakaoProfile kakaoProfile = objectMapper.readValue(response.getBody(), KakaoProfile.class);
+        KakaoProfile kakaoProfile = objectMapper2.readValue(response2.getBody(), KakaoProfile.class);
 
+        //User 오브젝트 : username, password, email
         System.out.println("카카오 아이디(번호): "+kakaoProfile.getId());
-        System.out.println("카카오 이메일: " + kakaoProfile.getKakaoAccount().email);
-        return response2.getBody();
+        System.out.println("카카오 이메일: " + kakaoProfile.getKakao_account().getEmail());
+
+        System.out.println("블로그서버 유저네임: "+ kakaoProfile.getKakao_account().getEmail() + + + kakaoProfile.getId());
+        System.out.println("블로그서버 이메일: " + kakaoProfile.getKakao_account().getEmail());
+
+
+        User kakaoUser = User.builder()
+                .username(kakaoProfile.getKakao_account().getEmail() + + +kakaoProfile.getId())
+                .password(cosKey)
+                .email(kakaoProfile.getKakao_account().getEmail())
+                .oauth("kakao")
+                .role(RoleType.USER)
+                .build();
+
+        //가입자 혹은 비가입자 체크해서 처리
+        User originUser = userService.회원찾기(kakaoUser.getUsername());
+
+        if(originUser.getUsername() == null){
+            System.out.println("신입 회원입니다.");
+            userService.회원가입(kakaoUser);
+        }
+
+        System.out.println("자동 로그인을 진행합니다.");
+        //로그인 처리
+        Authentication authenticate = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(kakaoUser.getUsername(), cosKey));
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+
+
+        return "redirect:/";
     }
 
 

@@ -8,7 +8,7 @@ public class KakaoProfile {
     public Integer id;
     public String connected_at;
     public Properties properties;
-    public KakaoAccount kakaoAccount;
+    public KakaoAccount kakao_account;
 
     @Data
     public class Properties {
@@ -35,7 +35,7 @@ public class KakaoProfile {
         public class Profile {
 
             public String nickname;
-            public String thumbnail_imageUrl;
+            public String thumbnail_image_url;
             public String profile_image_url;
             public Boolean is_default_image;
 
