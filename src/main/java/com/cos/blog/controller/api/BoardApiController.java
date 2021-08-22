@@ -2,8 +2,10 @@ package com.cos.blog.controller.api;
 
 
 import com.cos.blog.config.auth.PrincipalDetail;
+import com.cos.blog.dto.ReplySaveRequestDTO;
 import com.cos.blog.dto.ResponseDTO;
 import com.cos.blog.model.Board;
+import com.cos.blog.model.Reply;
 import com.cos.blog.model.User;
 import com.cos.blog.service.BoardService;
 import com.cos.blog.service.UserService;
@@ -37,10 +39,19 @@ public class BoardApiController {
 
     @PutMapping("/api/board/{id}")
     public ResponseDTO<Integer> update(@PathVariable int id, @RequestBody Board board){
-        System.out.println(board.getId());
-        System.out.println(board.getTitle());
-        System.out.println(board.getContent());
+
         boardService.글수정하기(id, board);
+
+        return new ResponseDTO<>(HttpStatus.OK.value(),1);
+    }
+
+
+    //데이터 받을 때 컨트롤러에서 dto를 만들어서 받는게 좋다.
+    //dto를 사용하지 않는 이유는 -> 프로젝트 규모가 크지 않아서 -> 실제로는 사용해야함.
+    @PostMapping("/api/board/{boardId}/reply")
+    public ResponseDTO<Integer> replySave(@RequestBody ReplySaveRequestDTO replySaveRequestDTO){
+
+        boardService.댓글쓰기(replySaveRequestDTO);
 
         return new ResponseDTO<>(HttpStatus.OK.value(),1);
     }

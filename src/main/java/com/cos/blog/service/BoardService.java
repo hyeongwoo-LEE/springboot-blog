@@ -1,9 +1,12 @@
 package com.cos.blog.service;
 
+import com.cos.blog.dto.ReplySaveRequestDTO;
 import com.cos.blog.model.Board;
+import com.cos.blog.model.Reply;
 import com.cos.blog.model.RoleType;
 import com.cos.blog.model.User;
 import com.cos.blog.repository.BoardRepository;
+import com.cos.blog.repository.ReplyRepository;
 import com.cos.blog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +25,10 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
 
+    private final ReplyRepository replyRepository;
+
+    private final UserRepository userRepository;
+
     @Transactional
     public void 글쓰기(Board board, User user){ //title, content
 
@@ -37,9 +44,13 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public Board 글상세보기(int id){
+
+
         return boardRepository.findById(id).orElseThrow(() -> {
                 return new IllegalArgumentException("글 상세보기 실패: 아이디를 찾을 수 없습니다.");
         });
+
+
     }
 
     @Transactional
@@ -57,6 +68,27 @@ public class BoardService {
         board.setTitle(requestBoard.getTitle());
         board.setContent(requestBoard.getContent());
         //해당 함수로 종료시(Service 가 종료될 때) 트랜잭션이 종료됩니다. 이때 더티체킹 - 자동 업데이트가 됨. db flush
+    }
+
+    @Transactional
+    public void 댓글쓰기(ReplySaveRequestDTO replySaveRequestDTO){
+
+        User user = userRepository.findById(replySaveRequestDTO.getUserId()).orElseThrow(() -> {
+            return new IllegalArgumentException("댓글 쓰기 실패: 게시글 id를 찾을 수 없습니다.");
+        });
+
+        Board board = boardRepository.findById(replySaveRequestDTO.getBoardId()).orElseThrow(() -> {
+            return new IllegalArgumentException("댓글 쓰기 실패: 게시글 id를 찾을 수 없습니다.");
+        });
+
+
+        Reply reply = Reply.builder()
+                .board(board)
+                .user(user)
+                .content(replySaveRequestDTO.getContent())
+                .build();
+
+        replyRepository.save(reply);
     }
 
 }

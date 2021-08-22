@@ -1,5 +1,6 @@
 package com.cos.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +36,9 @@ public class Board {
     private User user;
 
     @OneToMany(mappedBy = "board", fetch = FetchType.EAGER) //mappedBy 연관관계의 주인이 아니다. DB에 칼럼 만들지마라, fetch 기본전략 Lazy
-    private List<Reply> reply;
+    @JsonIgnoreProperties({"board"}) //무한 참조 해결
+    @OrderBy("id desc")
+    private List<Reply> replies;
 
     @CreationTimestamp
     private Timestamp createDate;
