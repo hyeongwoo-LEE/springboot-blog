@@ -55,6 +55,8 @@ public class BoardService {
 
     @Transactional
     public void 글삭제하기(int id){
+
+
         boardRepository.deleteById(id);
     }
 
@@ -71,24 +73,19 @@ public class BoardService {
     }
 
     @Transactional
-    public void 댓글쓰기(ReplySaveRequestDTO replySaveRequestDTO){
+    public void 댓글쓰기(ReplySaveRequestDTO replySaveRequestDTO) {
 
-        User user = userRepository.findById(replySaveRequestDTO.getUserId()).orElseThrow(() -> {
-            return new IllegalArgumentException("댓글 쓰기 실패: 게시글 id를 찾을 수 없습니다.");
-        });
+        int result = replyRepository.mSave(
+                replySaveRequestDTO.getUserId(), replySaveRequestDTO.getBoardId(), replySaveRequestDTO.getContent());
 
-        Board board = boardRepository.findById(replySaveRequestDTO.getBoardId()).orElseThrow(() -> {
-            return new IllegalArgumentException("댓글 쓰기 실패: 게시글 id를 찾을 수 없습니다.");
-        });
+        System.out.println(result);
+    }
 
+    @Transactional
+    public void 댓글삭제(int replyId){
 
-        Reply reply = Reply.builder()
-                .board(board)
-                .user(user)
-                .content(replySaveRequestDTO.getContent())
-                .build();
+        replyRepository.deleteById(replyId);
 
-        replyRepository.save(reply);
     }
 
 }
