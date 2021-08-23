@@ -7,7 +7,7 @@
 <div class="container">
     <form>
         <div class="form-group">
-            <label for="title">Username</label>
+            <label for="title">title</label>
             <input type="text" class="form-control" placeholder="Enter title" id="title">
         </div>
 
